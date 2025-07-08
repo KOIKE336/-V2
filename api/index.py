@@ -3,10 +3,26 @@ import json
 import os
 import random
 from datetime import datetime
+import traceback
+
+# Vercel用のパス設定
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# デバッグ情報を出力
+print(f"Current working directory: {os.getcwd()}")
+print(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
+print(f"Python path: {sys.path}")
 
 app = Flask(__name__, 
-           template_folder='../templates',
-           static_folder='../static')
+           template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates'),
+           static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static'))
+
+# デバッグ情報を出力
+print(f"Template folder: {app.template_folder}")
+print(f"Static folder: {app.static_folder}")
+print(f"Template folder exists: {os.path.exists(app.template_folder)}")
+print(f"Static folder exists: {os.path.exists(app.static_folder)}")
 
 class WebTimerConfig:
     def __init__(self):
@@ -99,13 +115,44 @@ class WebTimerConfig:
             "体調メモを付けて"自分の異変"を早期キャッチ"
         ]
 
-# グローバル設定インスタンス
-config = WebTimerConfig()
+# グローバル設定インスタンス - 安全に初期化
+try:
+    print("Initializing WebTimerConfig...")
+    config = WebTimerConfig()
+    print("WebTimerConfig initialized successfully")
+except Exception as e:
+    print(f"Error initializing config: {str(e)}")
+    print(f"Traceback: {traceback.format_exc()}")
+    # フォールバック設定
+    class FallbackConfig:
+        def __init__(self):
+            self.timer_minutes = 60
+            self.working_hours_enabled = True
+            self.working_hours_start = '08:30'
+            self.working_hours_end = '17:00'
+            self.reminder_message = '座りすぎです！少しストレッチしましょう！'
+            self.auto_close_seconds = 5
+            self.app_title = '座りすぎタイマーV2 - Web版'
+            self.health_tips = ['定期的に休憩を取りましょう']
+    
+    config = FallbackConfig()
+    print("Using fallback configuration")
 
 @app.route('/')
 def index():
     """メインページ"""
-    return render_template('index.html', config=config)
+    try:
+        print("Accessing index route...")
+        print(f"Config object: {config}")
+        print(f"Template folder: {app.template_folder}")
+        result = render_template('index.html', config=config)
+        print("Template rendered successfully")
+        return result
+    except Exception as e:
+        error_msg = f"Error in index route: {str(e)}"
+        print(error_msg)
+        print(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': error_msg, 'traceback': traceback.format_exc()}), 500
 
 @app.route('/api/config')
 def get_config():
@@ -128,6 +175,19 @@ def get_health_tip():
     return jsonify({
         'tip': tip,
         'message': config.reminder_message
+    })
+
+@app.route('/api/debug')
+def debug():
+    """デバッグ情報を返す"""
+    return jsonify({
+        'status': 'working',
+        'cwd': os.getcwd(),
+        'template_folder': app.template_folder,
+        'static_folder': app.static_folder,
+        'template_exists': os.path.exists(app.template_folder),
+        'static_exists': os.path.exists(app.static_folder),
+        'config_type': type(config).__name__
     })
 
 @app.route('/api/check_working_hours')
@@ -154,6 +214,10 @@ def check_working_hours():
         'current_time': now.strftime('%H:%M'),
         'working_hours': f"{config.working_hours_start}-{config.working_hours_end}"
     })
+
+# Vercel用のエクスポート - 正確な関数名を使用
+def handler(request):
+    return app
 
 # Vercel用のエクスポート
 app_handler = app
