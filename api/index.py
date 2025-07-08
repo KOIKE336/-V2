@@ -215,12 +215,6 @@ def check_working_hours():
         'working_hours': f"{config.working_hours_start}-{config.working_hours_end}"
     })
 
-# Vercel用のエクスポート - 正確な関数名を使用
-def handler(request):
-    return app
-
-# Vercel用のエクスポート
-app_handler = app
-
+# Vercel用のエクスポート - 直接appオブジェクトを使用
 if __name__ == '__main__':
     app.run(debug=True)
