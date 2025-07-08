@@ -13,6 +13,13 @@
 ## インストール方法
 
 ### ブラウザ版（推奨・新機能）
+
+#### オンライン版（Vercel）🌐
+- **URL**: https://your-project-name.vercel.app
+- インストール不要でブラウザからアクセス
+- 詳細は [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md) を参照
+
+#### ローカル版
 1. ブラウザ版ZIPファイルを解凍してください
 2. 解凍したフォルダ内で以下を実行：
    - **Windows**: `run_browser.bat` をダブルクリック

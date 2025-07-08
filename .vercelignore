@@ -1,0 +1,36 @@
+# ローカル開発用ファイル
+run_browser.bat
+run_browser.sh
+build*.bat
+build*.sh
+app.py
+timer.py
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# 配布パッケージ
+dist_package/
+browser_package/
+*.zip
