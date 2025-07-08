@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.app_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ config.app_title }}</h1>
+            <p class="subtitle">デスクワークの健康管理をサポート</p>
+        </header>
+
+        <main>
+            <!-- タイマー表示エリア -->
+            <div class="timer-display">
+                <div class="timer-circle">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle class="progress-ring-circle" 
+                                stroke="#e0e0e0" 
+                                stroke-width="8" 
+                                fill="transparent" 
+                                r="90" 
+                                cx="100" 
+                                cy="100"/>
+                        <circle class="progress-ring-progress" 
+                                stroke="#4CAF50" 
+                                stroke-width="8" 
+                                fill="transparent" 
+                                r="90" 
+                                cx="100" 
+                                cy="100"/>
+                    </svg>
+                    <div class="timer-text">
+                        <span id="timer-minutes">{{ config.timer_minutes }}</span>
+                        <span class="timer-unit">分</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 残り時間表示 -->
+            <div class="countdown-display">
+                <div id="countdown">--:--</div>
+                <div class="status" id="status">停止中</div>
+            </div>
+
+            <!-- 設定エリア -->
+            <div class="settings-panel">
+                <div class="setting-group">
+                    <label for="timer-input">タイマー時間（分）:</label>
+                    <div class="input-group">
+                        <input type="number" id="timer-input" min="1" max="999" value="{{ config.timer_minutes }}">
+                        <button id="set-timer" class="btn btn-secondary">設定</button>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="start-stop" class="btn btn-primary">開始</button>
+                    <button id="reset" class="btn btn-secondary">リセット</button>
+                </div>
+            </div>
+
+            <!-- 稼働時間情報 -->
+            <div class="working-hours-info">
+                <div id="working-hours-status"></div>
+                <div class="working-hours-text">
+                    {% if config.working_hours_enabled %}
+                        稼働時間: {{ config.working_hours_start }} - {{ config.working_hours_end }}
+                    {% else %}
+                        稼働時間制限: 無効
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 設定情報 -->
+            <div class="config-info">
+                <p>💡 設定変更は <code>config.ini</code> を編集してアプリを再起動してください</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- リマインダーモーダル -->
+    <div id="reminder-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔔 リマインダー</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="reminder-message">{{ config.reminder_message }}</p>
+                <div class="health-tip">
+                    <h3>💡 健康ミニ知識</h3>
+                    <p id="health-tip-text"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="close-reminder" class="btn btn-primary">OK</button>
+                <div class="auto-close-info">
+                    <span id="auto-close-countdown">{{ config.auto_close_seconds }}</span>秒後に自動で閉じます
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知音（オプション） -->
+    <audio id="notification-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+PyvmwgAz2U2uywZQkZaLvt6p9KEApPpuPuuWQdCDGI0fDbdi4FJYfN8tuJOgcZZrjt559MEAwUXrTp66hVFApGn+PyvmwgAz2U2+ywZQkZaLvs659KEApPpuPvuWQdCDGH0fDbdi4FJYfN8tuJOgcZZrjt559MEAwa" type="audio/wav">
+    </audio>
+
+    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+</body>
+</html>
