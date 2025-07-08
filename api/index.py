@@ -2,7 +2,6 @@ from flask import Flask, render_template, jsonify
 import json
 import os
 import random
-import configparser
 from datetime import datetime
 
 app = Flask(__name__, 
@@ -24,63 +23,81 @@ class WebTimerConfig:
         self.reminder_message = os.environ.get('REMINDER_MESSAGE', '座りすぎです！少しストレッチしましょう！')
         self.auto_close_seconds = int(os.environ.get('AUTO_CLOSE_SECONDS', '5'))
         self.app_title = os.environ.get('APP_TITLE', '座りすぎタイマーV2 - Web版')
-        
-        # ローカル環境では設定ファイルも読み込む
-        config_file = "../config.ini"
-        if os.path.exists(config_file):
-            try:
-                config = configparser.ConfigParser()
-                config.read(config_file, encoding='utf-8')
-                
-                if config.has_section('Timer'):
-                    self.timer_minutes = config.getint('Timer', 'default_minutes', fallback=self.timer_minutes)
-                    self.auto_close_seconds = config.getint('Timer', 'auto_close_seconds', fallback=self.auto_close_seconds)
-                
-                if config.has_section('WorkingHours'):
-                    self.working_hours_enabled = config.getboolean('WorkingHours', 'enabled', fallback=self.working_hours_enabled)
-                    self.working_hours_start = config.get('WorkingHours', 'start_time', fallback=self.working_hours_start)
-                    self.working_hours_end = config.get('WorkingHours', 'end_time', fallback=self.working_hours_end)
-                
-                if config.has_section('Messages'):
-                    self.reminder_message = config.get('Messages', 'reminder_message', fallback=self.reminder_message)
-                    self.app_title = config.get('Messages', 'app_title', fallback=self.app_title)
-                    
-            except Exception as e:
-                print(f"設定ファイルの読み込みエラー: {e}")
     
     def load_health_tips(self):
         """健康ミニ知識をロード"""
-        self.health_tips = []
-        
-        # 環境変数から読み込み（JSON形式）
-        tips_env = os.environ.get('HEALTH_TIPS')
-        if tips_env:
-            try:
-                self.health_tips = json.loads(tips_env)
-            except json.JSONDecodeError:
-                pass
-        
-        # ローカルファイルから読み込み
-        tips_file = "../tips.txt"
-        if not self.health_tips and os.path.exists(tips_file):
-            try:
-                with open(tips_file, 'r', encoding='utf-8') as f:
-                    self.health_tips = [line.strip() for line in f if line.strip()]
-            except Exception as e:
-                print(f"tips.txtの読み込みエラー: {e}")
-        
-        # デフォルトの健康ミニ知識
-        if not self.health_tips:
-            self.health_tips = [
-                "30分に1度は立ち上がって歩きましょう",
-                "首を左右にゆっくり回してストレッチしましょう",
-                "肩甲骨を寄せて胸を開くストレッチをしましょう",
-                "目を閉じて30秒間リラックスしましょう",
-                "深呼吸を3回して血流を改善しましょう",
-                "足首を回してむくみを予防しましょう",
-                "腰を左右にひねってストレッチしましょう",
-                "水分補給を忘れずに行いましょう"
-            ]
+        # デフォルトの健康ミニ知識（tips.txtの内容を直接埋め込み）
+        self.health_tips = [
+            "お菓子とファストフードは家に「買い置きしない」で断つ",
+            "水は１日コップ６〜８杯を小分けに",
+            "３色そろった皿（赤＝たんぱく質・緑＝野菜・黄＝主食）を目安に盛る",
+            "朝食のパンを「オートミール＋フルーツ」に置き換える",
+            "加工肉より「ゆで卵・納豆」を常備",
+            "コンビニでは「素焼きナッツ」を最初に手に取る",
+            "夜９時以降はカフェインを避ける",
+            "甘味飲料は「炭酸入り無糖水」にチェンジ",
+            "１週間に１度は「まるごと魚」を食卓へ",
+            "調味料はまず塩・胡椒・酢で薄味に慣れる",
+            "食物繊維を足すときは「皮つきリンゴ」だけでも OK",
+            "１日１回、ヨーグルト100 gで腸活",
+            "ラーメンは「スープ半分残し」をデフォルトに",
+            "ハイカカオチョコを"おやつの定番"にする",
+            "食べる順番は「野菜→たんぱく質→主食」",
+            "外食は「定食屋」で一汁三菜を意識",
+            "空腹で買い物に行かない（余計な買い物防止）",
+            "「ゆっくり20回噛む」を最初の３口だけでも実行",
+            "皿を小さめに替えて自然に適量化",
+            "週１回の"ノンアル日"をつくる",
+            "プロテインは１ g/kg 以上足りていない日にだけ使う",
+            "毎朝レモン水でビタミンＣをチャージ",
+            "冷凍野菜をストックして「忙しい＝野菜ゼロ」を防ぐ",
+            "調理油はオリーブオイルか菜種油を基本に",
+            "イスに60分座ったら必ず１分立つ",
+            "階段は"下り"だけでも歩く",
+            "スマホを持ったらスクワット５回をセット",
+            "歩くときは「耳・肩・くるぶしが一直線」を意識",
+            "朝の歯みがき中にカーフレイズ20回",
+            "テレビを見ながらプランク30秒",
+            "湯上がりに肩回し30回で猫背予防",
+            "１日合計 8,000 歩を目標に（通勤＋昼休み散歩で到達可）",
+            "ペットボトルをダンベルにして肩トレ２分",
+            "週２回は３つの大筋群（胸・背中・脚）を動かす",
+            "筋トレは「あと２回できる」で止めても十分伸びる",
+            "時間がない日は腕立て１セットだけでも◎",
+            "ウォームアップ代わりにジャンピングジャック30秒",
+            "ランチ前に５分の速歩で血糖コントロール",
+            "仕事中はかかと上げ下げで血流アップ",
+            "通話は立って行う",
+            "買い物袋は左右で持ち替えて左右差を減らす",
+            "就寝前ストレッチで深部体温を下げる",
+            "休日は「徒歩15分圏」を徒歩で済ませる",
+            "軽い運動でも"楽しい音楽"を流すと継続率↑",
+            "寝室温度は16〜19 ℃がベスト",
+            "就寝１時間前にスマホのブルーライトオフ",
+            "眠れない日は呼吸を「４秒吸う-７秒止める-８秒吐く」",
+            "ベッドでの動画視聴は禁止して"眠る場所"と覚えさせる",
+            "昼食後の15-20分仮眠で集中力を回復",
+            "入浴は就寝90分前・40 ℃以下で15分",
+            "休日でも起床時刻は±１時間以内",
+            "枕元に水を置き夜間の脱水を防ぐ",
+            "寝る前の部屋片づけで"視覚ノイズ"を減らす",
+            "アルコールは就寝３時間前まで",
+            "昼休みに自然光を浴びて体内時計をリセット",
+            "眠気覚ましは「窓を開けて深呼吸」から",
+            "寝る前の重たい議論・ニュースチェックは避ける",
+            "CO₂がこもらないよう就寝前に３分換気",
+            "休日の「寝だめ」は２時間以内にとどめる",
+            "加湿器で湿度40-60 %をキープ",
+            "挨拶はグータッチの方が握手より細菌が少ない",
+            "手洗いは「石けん＋20秒」で指先・親指も念入りに",
+            "外出後はうがいより"鼻うがい"の方が上気道ケアに◎",
+            "デスク周りを１日１回アルコール拭き",
+            "歯間ブラシ or フロスを毎晩使用",
+            "公共トイレのドアはペーパーを介して開閉",
+            "冬場の加湿でインフル感染リスクを下げる",
+            "眼精疲労対策に「20分作業→20秒遠くを見る」を徹底",
+            "体調メモを付けて"自分の異変"を早期キャッチ"
+        ]
 
 # グローバル設定インスタンス
 config = WebTimerConfig()
@@ -139,8 +156,7 @@ def check_working_hours():
     })
 
 # Vercel用のエクスポート
-def handler(request):
-    return app(request.environ, lambda s, h: None)
+app_handler = app
 
 if __name__ == '__main__':
     app.run(debug=True)
