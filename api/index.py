@@ -21,7 +21,7 @@ def index():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>座りすぎタイマーV2</title>
+        <title>座りすぎタイマー</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -76,7 +76,7 @@ def index():
     </head>
     <body>
         <div class="container">
-            <h1>座りすぎタイマーV2</h1>
+            <h1>座りすぎタイマー</h1>
             <div class="timer-display" id="timer">60:00</div>
             <div class="controls">
                 <button class="start-btn" onclick="startTimer()">スタート</button>
